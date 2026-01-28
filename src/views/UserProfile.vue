@@ -39,44 +39,10 @@
             <div class="stat-number">{{ userInfo.postCount || 0 }}</div>
             <div class="stat-label">发布的动态</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-number">{{ userInfo.playlistCount || 0 }}</div>
-            <div class="stat-label">创建的歌单</div>
-          </div>
+
         </div>
         
-        <!-- 我的歌单 -->
-        <div class="my-playlists">
-          <div class="section-title">
-            <h3>我的歌单</h3>
-            <el-button type="primary" size="small" @click="createPlaylist">新建歌单</el-button>
-          </div>
-          <div v-if="myPlaylists.length > 0" class="playlist-grid">
-            <div v-for="playlist in myPlaylists" :key="playlist.id" class="playlist-card" @click="goToPlaylist(playlist.id)">
-              <div class="playlist-cover">
-                <el-image :src="playlist.coverPath" fit="cover">
-                  <template #error>
-                    <div class="image-slot">
-                      <el-icon><Picture /></el-icon>
-                    </div>
-                  </template>
-                  <template #placeholder>
-                    <div class="image-slot">
-                      <el-icon><Picture /></el-icon>
-                    </div>
-                  </template>
-                </el-image>
-              </div>
-              <div class="playlist-info">
-                <h4>{{ playlist.name }}</h4>
-                <p>{{ playlist.musicCount }} 首音乐</p>
-              </div>
-            </div>
-          </div>
-          <div v-else class="empty-state">
-            <p>暂无歌单</p>
-          </div>
-        </div>
+
 
         <!-- 最近播放 -->
         <div class="recent-plays">
@@ -168,24 +134,11 @@ const userInfo = ref({
   avatar: '',
   createdAt: '',
   favoriteCount: 0,
-  postCount: 0,
-  playlistCount: 0
+  postCount: 0
 })
 
 // 最近播放
 const recentPlays = ref([])
-
-// 我的歌单
-const myPlaylists = ref([])
-
-// 路由跳转
-const goToPlaylist = (id) => {
-  router.push(`/playlist/${id}`)
-}
-
-const createPlaylist = () => {
-  router.push('/playlist')
-}
 
 // 返回上一页
 const goBack = () => {
@@ -357,18 +310,7 @@ const loadUserInfo = async () => {
   }
 }
 
-// 加载我的歌单
-const loadMyPlaylists = async () => {
-  try {
-    const response = await request.get('/playlist/my')
-    if (Array.isArray(response)) {
-      myPlaylists.value = response
-    }
-  } catch (error) {
-    console.error('获取歌单失败:', error)
-    ElMessage.error('获取歌单失败')
-  }
-}
+
 
 // 加载最近播放
 const loadRecentPlays = async () => {
@@ -456,7 +398,6 @@ onMounted(() => {
   console.log('开始加载用户信息...')
   loadUserInfo()
   loadRecentPlays()
-  loadMyPlaylists()
 })
 </script>
 
@@ -560,58 +501,7 @@ onMounted(() => {
   margin: 0;
 }
 
-.playlist-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 20px;
-}
 
-.playlist-card {
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.playlist-card:hover {
-  transform: translateY(-5px);
-}
-
-.playlist-cover {
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-bottom: 8px;
-}
-
-.playlist-cover .el-image {
-  width: 100%;
-  height: 100%;
-}
-
-.image-slot {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  height: 100%;
-  background: #f5f7fa;
-  color: #909399;
-  font-size: 30px;
-}
-
-.playlist-info h4 {
-  margin: 0 0 4px;
-  font-size: 14px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.playlist-info p {
-  margin: 0;
-  font-size: 12px;
-  color: #909399;
-}
 
 .recent-plays {
   background: #fff;

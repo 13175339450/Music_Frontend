@@ -16,7 +16,6 @@
             <span>{{ followingCount }} 关注</span>
             <span>{{ followerCount }} 粉丝</span>
             <span>{{ profile.postCount }} 动态</span>
-            <span>{{ profile.playlistCount }} 歌单</span>
           </div>
           <div class="actions">
             <el-button

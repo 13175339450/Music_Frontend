@@ -6,10 +6,8 @@
           <h1>社交化音乐平台</h1>
         </div>
         <nav class="nav">
-          <router-link to="/" class="nav-item">首页</router-link>
-          <router-link to="/dynamic" class="nav-item">动态</router-link>
-          <router-link to="/playlist" class="nav-item">歌单</router-link>
           <router-link to="/discover" class="nav-item">发现音乐</router-link>
+          <router-link to="/dynamic" class="nav-item">动态</router-link>
           <router-link v-if="isAuthenticated" to="/recommendations" class="nav-item">个性化推荐</router-link>
           <router-link v-if="isAuthenticated" to="/following" class="nav-item">我的关注</router-link>
           <router-link v-if="isAuthenticated" to="/followers" class="nav-item">我的粉丝</router-link>

@@ -22,16 +22,7 @@ const routes = [
     name: 'MusicDetail',
     component: () => import('../views/MusicDetail.vue')
   },
-  {
-    path: '/playlist',
-    name: 'Playlist',
-    component: () => import('../views/Playlist.vue')
-  },
-  {
-    path: '/playlist/:id',
-    name: 'PlaylistDetail',
-    component: () => import('../views/PlaylistDetail.vue')
-  },
+
   {
     path: '/discover',
     name: 'Discover',

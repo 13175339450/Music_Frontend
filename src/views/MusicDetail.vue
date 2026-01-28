@@ -46,10 +46,6 @@
               <el-icon><Share /></el-icon>
               分享
             </el-button>
-            <el-button type="default" @click="handleAddToPlaylist">
-              <el-icon><PlaylistAdd /></el-icon>
-              加入歌单
-            </el-button>
           </div>
           <div class="music-description">
             <h3>简介</h3>
@@ -148,38 +144,7 @@
     </div>
   </div>
 
-  <!-- 加入歌单弹窗 -->
-  <el-dialog
-    v-model="showAddToPlaylistModal"
-    title="选择歌单"
-    width="500px"
-  >
-    <div v-if="userPlaylists.length === 0" class="no-playlists">
-      <p>你还没有创建任何歌单</p>
-      <el-button type="primary" @click="router.push('/playlist')">
-        去创建歌单
-      </el-button>
-    </div>
-    <div v-else>
-      <el-checkbox-group v-model="selectedPlaylists">
-        <el-checkbox
-          v-for="playlist in userPlaylists"
-          :key="playlist.id"
-          :label="playlist.id"
-        >
-          {{ playlist.name }}
-        </el-checkbox>
-      </el-checkbox-group>
-    </div>
-    <template #footer>
-      <span class="dialog-footer">
-        <el-button @click="showAddToPlaylistModal = false">取消</el-button>
-        <el-button type="primary" @click="handleConfirmAddToPlaylist" :disabled="selectedPlaylists.length === 0">
-          确认添加
-        </el-button>
-      </span>
-    </template>
-  </el-dialog>
+
 </template>
 
 <script setup>
@@ -187,7 +152,7 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { ElMessage, ElIcon, ElDialog, ElCheckboxGroup, ElCheckbox, ElButton, ElAvatar } from 'element-plus'
-import { VideoPlay, Star as Like, Share, FolderAdd as PlaylistAdd, ArrowUp, ArrowDown } from '@element-plus/icons-vue'
+import { VideoPlay, Star as Like, Share, ArrowUp, ArrowDown } from '@element-plus/icons-vue'
 import request from '../utils/request'
 
 const route = useRoute()
@@ -217,11 +182,6 @@ const isLiked = ref(false)
 const isFollowingMusician = ref(false)
 const isPlaying = computed(() => store.state.isPlaying && store.state.currentMusic?.id === music.id)
 
-// 加入歌单相关
-const showAddToPlaylistModal = ref(false)
-const userPlaylists = ref([])
-const selectedPlaylists = ref([])
-
 // 回复相关
 const replyToComment = ref(null)
 const replyContent = ref('')
@@ -229,21 +189,7 @@ const showReplyInput = ref(null)
 const expandedReplies = ref(new Set())
 const MAX_VISIBLE_REPLIES = 2
 
-const getUserPlaylists = () => {
-  if (!store.state.isAuthenticated) {
-    ElMessage.warning('请先登录')
-    return
-  }
-  
-  request.get('/playlist/my')
-    .then(response => {
-      userPlaylists.value = Array.isArray(response) ? response : (response.data || [])
-    })
-    .catch(error => {
-      console.error('Failed to get user playlists:', error)
-      ElMessage.error('获取歌单失败')
-    })
-}
+
 
 const formatDate = (dateString) => {
   const date = new Date(dateString)
@@ -382,37 +328,7 @@ const handleShare = () => {
   }
 }
 
-const handleAddToPlaylist = () => {
-  if (!store.state.isAuthenticated) {
-    ElMessage.warning('请先登录')
-    return
-  }
-  
-  selectedPlaylists.value = []
-  getUserPlaylists()
-  showAddToPlaylistModal.value = true
-}
 
-const handleConfirmAddToPlaylist = () => {
-  if (selectedPlaylists.value.length === 0) {
-    ElMessage.warning('请选择至少一个歌单')
-    return
-  }
-  
-  const addPromises = selectedPlaylists.value.map(playlistId => {
-    return request.post(`/playlist/${playlistId}/music`, { musicId: music.id })
-  })
-  
-  Promise.all(addPromises)
-    .then(() => {
-      ElMessage.success(`成功添加到 ${selectedPlaylists.value.length} 个歌单`)
-      showAddToPlaylistModal.value = false
-    })
-    .catch(error => {
-      console.error('Failed to add music to playlist:', error)
-      ElMessage.error('添加歌单失败')
-    })
-}
 
 const handleSubmitComment = () => {
   if (!store.state.isAuthenticated) {
