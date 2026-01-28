@@ -3,11 +3,11 @@ import { createStore } from 'vuex'
 const store = createStore({
   state: {
     user: {
-      id: null,
-      username: null,
-      nickname: null,
-      avatar: null,
-      roles: []
+      id: localStorage.getItem('userId'),
+      username: localStorage.getItem('username'),
+      nickname: localStorage.getItem('nickname'),
+      avatar: localStorage.getItem('avatar'),
+      roles: JSON.parse(localStorage.getItem('roles') || '[]')
     },
     isAuthenticated: !!localStorage.getItem('token'),
     token: localStorage.getItem('token') || null,
@@ -16,7 +16,7 @@ const store = createStore({
     currentTime: 0,
     duration: 0,
     volume: 70,
-    playMode: 'order', // order, random, loop
+    playMode: 'order',
     playlist: []
   },
   getters: {
@@ -43,6 +43,11 @@ const store = createStore({
     setUser(state, user) {
       state.user = user
       state.isAuthenticated = true
+      localStorage.setItem('userId', user.id || '')
+      localStorage.setItem('username', user.username || '')
+      localStorage.setItem('nickname', user.nickname || '')
+      localStorage.setItem('avatar', user.avatar || '')
+      localStorage.setItem('roles', JSON.stringify(user.roles || []))
     },
     setToken(state, token) {
       state.token = token
@@ -59,6 +64,10 @@ const store = createStore({
       state.isAuthenticated = false
       state.token = null
       localStorage.removeItem('token')
+      localStorage.removeItem('userId')
+      localStorage.removeItem('username')
+      localStorage.removeItem('nickname')
+      localStorage.removeItem('avatar')
       localStorage.removeItem('roles')
     },
     setCurrentMusic(state, music) {
