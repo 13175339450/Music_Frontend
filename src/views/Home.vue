@@ -8,7 +8,6 @@
         <nav class="nav">
           <router-link to="/" class="nav-item">首页</router-link>
           <router-link to="/dynamic" class="nav-item">动态</router-link>
-          <router-link v-if="isAuthenticated" to="/recommendations" class="nav-item">个性化推荐</router-link>
           <router-link v-if="isAuthenticated" to="/following" class="nav-item">我的关注</router-link>
           <router-link v-if="isAuthenticated" to="/followers" class="nav-item">我的粉丝</router-link>
           <router-link v-if="hasMusician" to="/musician" class="nav-item">音乐人中心</router-link>
@@ -40,42 +39,6 @@
               <el-button @click="handleSearch">搜索</el-button>
             </template>
           </el-input>
-        </section>
-
-        <section v-if="isAuthenticated && personalizedRecommendations.length > 0" class="recommend-section personalized-section">
-          <div class="section-header">
-            <div class="header-left">
-              <h2>每日推荐</h2>
-              <!-- <span class="subtitle">基于协同过滤算法为您定制</span> -->
-            </div>
-            <router-link to="/recommendations" class="more-link">
-              查看更多 <el-icon><ArrowRight /></el-icon>
-            </router-link>
-          </div>
-          <div class="music-grid">
-            <div
-              v-for="music in personalizedRecommendations"
-              :key="music.id"
-              class="music-card"
-              @click="goToMusicDetail(music.id)"
-            >
-              <div class="music-cover">
-                <el-image :src="`/api/music/cover/${music.id}`" fit="cover" class="cover-image">
-                  <template #error>
-                    <div class="placeholder"></div>
-                  </template>
-                </el-image>
-              </div>
-              <div class="music-info">
-                <h3>{{ music.title }}</h3>
-                <p>{{ music.artist }}</p>
-                <div class="music-stats">
-                  <span>{{ music.playCount }} 播放</span>
-                  <span>{{ music.likeCount }} 喜欢</span>
-                </div>
-              </div>
-            </div>
-          </div>
         </section>
 
         <section class="recommend-section">
@@ -120,7 +83,6 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
-import { ArrowRight } from '@element-plus/icons-vue'
 import request from '../utils/request'
 
 const router = useRouter()
@@ -128,7 +90,6 @@ const store = useStore()
 
 const searchKeyword = ref('')
 const musicList = ref([])
-const personalizedRecommendations = ref([])
 
 const isAuthenticated = computed(() => store.getters.isAuthenticated)
 const user = computed(() => store.getters.currentUser)
@@ -142,18 +103,6 @@ const getMusicList = async () => {
     musicList.value = response
   } catch (error) {
     console.error('Failed to get music list:', error)
-  }
-}
-
-// 获取个性化推荐
-const getPersonalizedRecommendations = async () => {
-  if (isAuthenticated.value) {
-    try {
-      const response = await request.get('/recommendations')
-      personalizedRecommendations.value = Array.isArray(response) ? response.slice(0, 5) : []
-    } catch (error) {
-      console.error('Failed to get recommendations:', error)
-    }
   }
 }
 
@@ -178,9 +127,6 @@ const handleLogout = () => {
 // 页面加载时获取音乐列表
 onMounted(() => {
   getMusicList()
-  if (isAuthenticated.value) {
-    getPersonalizedRecommendations()
-  }
 })
 </script>
 
@@ -240,47 +186,6 @@ onMounted(() => {
 .recommend-section h2 {
   margin-bottom: 24px;
   font-size: 24px;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.header-left {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-}
-
-.section-header h2 {
-  margin: 0;
-  font-size: 24px;
-}
-
-.subtitle {
-  color: #999;
-  font-size: 14px;
-}
-
-.more-link {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  color: #666;
-  text-decoration: none;
-  font-size: 14px;
-  transition: color 0.3s;
-}
-
-.more-link:hover {
-  color: #1890ff;
-}
-
-.personalized-section {
-  margin-bottom: 48px;
 }
 
 .music-grid {

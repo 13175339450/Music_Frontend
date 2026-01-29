@@ -30,12 +30,6 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/recommendations',
-    name: 'Recommendations',
-    component: () => import('../views/Recommendations.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
     path: '/musician',
     name: 'MusicianCenter',
     component: () => import('../views/MusicianCenter.vue'),
