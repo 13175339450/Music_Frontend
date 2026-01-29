@@ -370,7 +370,7 @@ const store = useStore()
 const user = computed(() => store.state.user)
 const router = useRouter()
 const goBack = () => {
-  router.back()
+  router.push('/')
 }
 
 // Dashboard stats
