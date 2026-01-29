@@ -6,7 +6,7 @@
           <h1>社交化音乐平台</h1>
         </div>
         <nav class="nav">
-          <router-link to="/discover" class="nav-item">发现音乐</router-link>
+          <router-link to="/" class="nav-item">首页</router-link>
           <router-link to="/dynamic" class="nav-item">动态</router-link>
           <router-link v-if="isAuthenticated" to="/recommendations" class="nav-item">个性化推荐</router-link>
           <router-link v-if="isAuthenticated" to="/following" class="nav-item">我的关注</router-link>
@@ -32,7 +32,7 @@
         <section class="search-section">
           <el-input
             v-model="searchKeyword"
-            placeholder="搜索音乐、歌手、歌单"
+            placeholder="搜索音乐、歌手"
             style="width: 500px"
             @keyup.enter="handleSearch"
           >

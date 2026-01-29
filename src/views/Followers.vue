@@ -61,10 +61,6 @@ const goBack = () => {
   router.back()
 }
 
-const goToDiscover = () => {
-  router.push('/discover')
-}
-
 const getFollowersList = async () => {
   loading.value = true
   try {

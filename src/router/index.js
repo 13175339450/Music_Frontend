@@ -24,11 +24,6 @@ const routes = [
   },
 
   {
-    path: '/discover',
-    name: 'Discover',
-    component: () => import('../views/Discover.vue')
-  },
-  {
     path: '/dynamic',
     name: 'Dynamic',
     component: () => import('../views/Dynamic.vue'),

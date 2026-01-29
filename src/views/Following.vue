@@ -12,7 +12,6 @@
         <div v-else-if="followingList.length === 0" class="empty-state">
           <el-icon class="empty-icon"><User /></el-icon>
           <p>你还没有关注任何人</p>
-          <el-button type="primary" @click="goToDiscover">去发现音乐人</el-button>
         </div>
 
         <div v-else class="user-grid">
@@ -63,10 +62,6 @@ const followStatusMap = ref(new Map())
 
 const goBack = () => {
   router.back()
-}
-
-const goToDiscover = () => {
-  router.push('/discover')
 }
 
 const getFollowingList = async () => {
