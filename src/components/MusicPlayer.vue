@@ -1,5 +1,5 @@
 <template>
-  <div class="music-player" v-if="currentMusic">
+  <div class="music-player" v-if="currentMusic && showPlayer">
     <div class="player-content">
       <!-- 音乐信息 -->
       <div class="music-info">
@@ -12,15 +12,12 @@
 
       <!-- 播放控制 -->
       <div class="play-controls">
-        <el-button circle @click="handlePrevious" :disabled="!canPlayPrevious">
-          <el-icon><SkipPrevious /></el-icon>
-        </el-button>
         <el-button circle size="large" @click="handlePlayPause">
           <el-icon v-if="!isPlaying"><Play /></el-icon>
           <el-icon v-else><Pause /></el-icon>
         </el-button>
-        <el-button circle @click="handleNext" :disabled="!canPlayNext">
-          <el-icon><SkipNext /></el-icon>
+        <el-button circle @click="closePlayer">
+          <el-icon><Close /></el-icon>
         </el-button>
       </div>
 
@@ -76,20 +73,22 @@ import { ElMessage, ElIcon } from 'element-plus'
 import {
   VideoPlay as Play,
   VideoPause as Pause,
-  ArrowLeft as SkipPrevious,
-  ArrowRight as SkipNext,
   Microphone as Sound,
   Mute as SoundMuted,
   List,
   RefreshRight,
   View,
-  Headset as Music
+  Headset as Music,
+  Close
 } from '@element-plus/icons-vue'
 
 const store = useStore()
 
 // 音频元素引用
 const audioElement = ref(null)
+
+// 播放器显示状态
+const showPlayer = ref(true)
 
 // 播放状态
 const currentMusic = computed(() => store.state.currentMusic)
@@ -144,6 +143,16 @@ const handlePlayPause = () => {
   } else {
     store.dispatch('playMusic', currentMusic.value)
   }
+}
+
+// 关闭播放器
+const closePlayer = () => {
+  // 暂停音乐播放
+  store.dispatch('pauseMusic')
+  // 清除当前音乐
+  store.commit('setCurrentMusic', null)
+  // 隐藏播放器
+  showPlayer.value = false
 }
 
 // 上一首
@@ -209,6 +218,7 @@ const togglePlayMode = () => {
 // 监听当前音乐变化
 watch(currentMusic, (newMusic) => {
   if (newMusic && audioElement.value) {
+    showPlayer.value = true
     // 设置新的音频源
     audioElement.value.src = `/api/music/play/${newMusic.id}`
     audioElement.value.load()
