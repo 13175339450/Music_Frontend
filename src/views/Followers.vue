@@ -9,7 +9,11 @@
           <span>加载中...</span>
         </div>
 
-       
+        <div v-else-if="followersList.length === 0" class="empty-state">
+          <el-icon class="empty-icon"><User /></el-icon>
+          <p>暂时还没有粉丝</p>
+          <p>当有用户关注你时，他们将出现在这里</p>
+        </div>
 
         <div v-else class="user-grid">
           <div v-for="user in followersList" :key="user.id" class="user-card">
@@ -21,17 +25,17 @@
             <div class="user-info">
               <h3 class="user-name">{{ user.nickname || user.username }}</h3>
               <p class="user-bio">{{ user.bio || '这个人很懒，什么都没写' }}</p>
-             
+
               <div class="user-actions">
                 <el-button
-                  :type="isFollowing(user.id) ? 'default' : 'primary'"
-                  size="small"
-                  @click="handleFollow(user)"
-                  :loading="followLoading === user.id"
+                    :type="isFollowing(user.id) ? 'default' : 'primary'"
+                    size="small"
+                    @click="handleFollow(user)"
+                    :loading="followLoading === user.id"
                 >
                   {{ isFollowing(user.id) ? '已关注' : '回关' }}
                 </el-button>
-               
+
               </div>
             </div>
           </div>
@@ -182,8 +186,9 @@ onMounted(() => {
 }
 
 .empty-state p {
-  margin-bottom: 24px;
+  margin-bottom: 12px;
   font-size: 16px;
+  text-align: center;
 }
 
 .user-grid {
