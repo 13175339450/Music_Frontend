@@ -170,7 +170,7 @@
                   </el-badge>
                 </template>
                 <div class="review-table">
-                  <el-table :data="pendingMusic" style="width: 100%" stripe :height="400" class="music-review-table">
+                  <el-table :data="pendingMusic" style="width: 100%; max-width: 100%" stripe :height="400" class="music-review-table">
                     <el-table-column prop="id" label="ID" width="80" />
                     <el-table-column prop="title" label="标题" width="200" />
                     <el-table-column prop="artist" label="歌手" width="150" />
@@ -216,7 +216,7 @@
                   </el-badge>
                 </template>
                 <div class="review-table">
-                  <el-table :data="pendingPosts" style="width: 100%" stripe :height="400" class="post-review-table">
+                  <el-table :data="pendingPosts" style="width: 100%; max-width: 100%" stripe :height="400" class="post-review-table">
                     <el-table-column prop="id" label="ID" width="80" />
 
                     <el-table-column prop="content" label="动态内容" width="300">
@@ -1258,6 +1258,9 @@ onMounted(() => {
   padding: 20px;
   background-color: #f9fafb;
   border-radius: 8px;
+  max-width: calc(100vw - 200px);  /* 减去边距，适应屏幕 */
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .review-operation-btn {
@@ -1313,6 +1316,8 @@ onMounted(() => {
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+  margin: 0 auto;
 }
 
 /* Operation buttons spacing */
