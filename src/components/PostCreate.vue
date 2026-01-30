@@ -71,6 +71,12 @@ import { Picture, Delete, Plus } from '@element-plus/icons-vue'
 const store = useStore()
 const user = computed(() => store.getters.currentUser)
 
+// 检查是否为管理员
+const isAdmin = computed(() => {
+  const roles = store.state.user.roles || []
+  return roles.includes('ROLE_ADMIN')
+})
+
 // 上传请求头
 const uploadHeaders = computed(() => {
   const token = localStorage.getItem('token')
@@ -136,7 +142,9 @@ const submitPost = async () => {
   try {
     const postData = {
       content: post.value.content,
-      imageUrls: selectedImages.value.join(',')
+      imageUrls: selectedImages.value.join(','),
+      // 如果是管理员，设置状态为已通过（2），否则使用默认值（1表示待审核）
+      status: isAdmin.value ? 2 : 1
     }
     
     await request.post('/posts', postData)
