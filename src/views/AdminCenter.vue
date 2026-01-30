@@ -184,7 +184,11 @@
                       </template>
                     </el-table-column>
 
-                    <el-table-column prop="createdAt" label="上传时间" width="180" />
+                    <el-table-column prop="createTime" label="上传时间" width="180">
+                      <template #default="scope">
+                        {{ formatDate(scope.row.createTime) }}
+                      </template>
+                    </el-table-column>
                     <el-table-column label="操作" width="200" fixed="right">
                       <template #default="scope">
                         <div class="operation-buttons">
@@ -220,7 +224,11 @@
                         <div class="post-content-preview">{{ scope.row.content }}</div>
                       </template>
                     </el-table-column>
-                    <el-table-column prop="createdAt" label="发布时间" width="180" />
+                    <el-table-column prop="createdAt" label="发布时间" width="180">
+                      <template #default="scope">
+                        {{ formatDate(scope.row.createdAt) }}
+                      </template>
+                    </el-table-column>
                     <el-table-column label="状态" width="100">
                       <template #default="scope">
                         <el-tag :type="getPostStatusType(scope.row.status)">
@@ -460,7 +468,14 @@ let contentDistributionChartInstance = null
 
 const formatDate = (dateVal) => {
   if (!dateVal) return '-'
-  return new Date(dateVal).toLocaleString()
+  const date = new Date(dateVal)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  const seconds = String(date.getSeconds()).padStart(2, '0')
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
 const getDashboardStats = () => {
