@@ -170,10 +170,10 @@
                   </el-badge>
                 </template>
                 <div class="review-table">
-                  <el-table :data="pendingMusic" style="width: 100%" stripe :height="400">
+                  <el-table :data="pendingMusic" style="width: 100%" stripe :height="400" class="music-review-table">
                     <el-table-column prop="id" label="ID" width="80" />
-                    <el-table-column prop="title" label="标题" />
-                    <el-table-column prop="artist" label="歌手" />
+                    <el-table-column prop="title" label="标题" width="200" />
+                    <el-table-column prop="artist" label="歌手" width="150" />
                     <el-table-column label="封面" width="100">
                       <template #default="scope">
                         <el-image
@@ -183,15 +183,11 @@
                         ></el-image>
                       </template>
                     </el-table-column>
-                    <el-table-column prop="creator" label="上传者" width="120">
-                      <template #default="scope">
-                        {{ scope.row.creator?.nickname || scope.row.creator?.username }}
-                      </template>
-                    </el-table-column>
+
                     <el-table-column prop="createdAt" label="上传时间" width="180" />
-                    <el-table-column label="操作" width="180" fixed="right">
+                    <el-table-column label="操作" width="200" fixed="right">
                       <template #default="scope">
-                        <el-button-group>
+                        <div class="operation-buttons">
                           <el-button type="success" size="small" @click="handleApproveMusic(scope.row)" class="review-operation-btn">
                             <el-icon><Check /></el-icon>
                             通过
@@ -200,7 +196,7 @@
                             <el-icon><Close /></el-icon>
                             拒绝
                           </el-button>
-                        </el-button-group>
+                        </div>
                       </template>
                     </el-table-column>
                   </el-table>
@@ -216,16 +212,12 @@
                   </el-badge>
                 </template>
                 <div class="review-table">
-                  <el-table :data="pendingPosts" style="width: 100%" stripe :height="400">
+                  <el-table :data="pendingPosts" style="width: 100%" stripe :height="400" class="post-review-table">
                     <el-table-column prop="id" label="ID" width="80" />
-                    <el-table-column label="发布者" width="120">
+
+                    <el-table-column prop="content" label="动态内容" width="300">
                       <template #default="scope">
-                        {{ scope.row.user?.nickname || scope.row.user?.username }}
-                      </template>
-                    </el-table-column>
-                    <el-table-column prop="content" label="动态内容" width="400">
-                      <template #default="scope">
-                        <div class="comment-preview">{{ scope.row.content }}</div>
+                        <div class="post-content-preview">{{ scope.row.content }}</div>
                       </template>
                     </el-table-column>
                     <el-table-column prop="createdAt" label="发布时间" width="180" />
@@ -236,9 +228,9 @@
                         </el-tag>
                       </template>
                     </el-table-column>
-                    <el-table-column label="操作" width="180" fixed="right">
+                    <el-table-column label="操作" width="200" fixed="right">
                       <template #default="scope">
-                        <el-button-group>
+                        <div class="operation-buttons">
                           <el-button type="success" size="small" @click="handleApprovePost(scope.row)" class="review-operation-btn">
                             <el-icon><Check /></el-icon>
                             通过
@@ -247,7 +239,7 @@
                             <el-icon><Close /></el-icon>
                             拒绝
                           </el-button>
-                        </el-button-group>
+                        </div>
                       </template>
                     </el-table-column>
                   </el-table>
@@ -1232,5 +1224,97 @@ onMounted(() => {
   font-size: 18px;
   font-weight: 500;
   color: #303133;
+}
+
+/* Content Review Section Styling */
+.content-review-section {
+  margin-top: 20px;
+}
+
+.review-tabs {
+  background-color: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+}
+
+.review-table {
+  margin-top: 20px;
+  padding: 20px;
+  background-color: #f9fafb;
+  border-radius: 8px;
+}
+
+.review-operation-btn {
+  min-width: 60px;
+  margin: 2px;
+}
+
+/* Music Review Table Enhancements */
+.music-review-table .el-table__row {
+  transition: background-color 0.3s ease;
+}
+
+.music-review-table .el-table__row:hover {
+  background-color: #f5f7fa;
+}
+
+/* Post Review Table Enhancements */
+.post-review-table .el-table__row {
+  transition: background-color 0.3s ease;
+}
+
+.post-review-table .el-table__row:hover {
+  background-color: #f5f7fa;
+}
+
+/* Custom badge styling for review tabs */
+.review-tab-badge .el-badge__content {
+  transform: translateY(-50%) translateX(100%) scale(0.8);
+}
+
+/* Improved table header styling */
+.el-table .el-table__header th {
+  background-color: #f8f9fa !important;
+  color: #3c4250;
+  font-weight: 600;
+  padding: 12px 0;
+}
+
+/* Better button group spacing */
+.el-button-group {
+  display: flex;
+}
+
+.review-operation-btn {
+  flex: 1;
+  min-width: auto;
+  margin: 2px;
+  border-radius: 4px;
+}
+
+/* Enhanced card-like appearance for tables */
+.review-table .el-table {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Operation buttons spacing */
+.operation-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+/* Post content preview styling */
+.post-content-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+  max-height: 2.8em; /* 2 lines */
+  word-break: break-word;
 }
 </style>
