@@ -1,10 +1,23 @@
 <template>
   <div class="dynamic-page">
     <div class="page-header">
-      <el-button type="text" @click="router.back()" style="margin-right: 16px;">
-        <el-icon><ArrowLeft /></el-icon>
-      </el-button>
-      <h2>动态</h2>
+      <div class="header-content">
+        <div class="back-section">
+          <el-button 
+            type="default" 
+            size="large" 
+            @click="goBack"
+            class="back-button"
+          >
+            <template #icon>
+              <el-icon><ArrowLeft /></el-icon>
+            </template>
+            返回
+          </el-button>
+        </div>
+        <h2 class="page-title">动态</h2>
+        <div class="header-spacer"></div>
+      </div>
     </div>
     
     <!-- 动态发布组件 -->
@@ -34,6 +47,17 @@ const router = useRouter()
 
 const store = useStore()
 const isAuthenticated = computed(() => store.getters.isAuthenticated)
+
+// 返回上一页
+const goBack = () => {
+  router.go(-1) // 尝试返回上一页
+  // 如果没有上一页，则导航到首页
+  setTimeout(() => {
+    if (window.history.state?.current === window.location.pathname) {
+      router.push('/')
+    }
+  }, 100)
+}
 
 // 动态列表
 const posts = ref([])
@@ -101,14 +125,61 @@ onMounted(() => {
   max-width: 800px;
   margin: 0 auto;
   padding: 24px;
+  min-height: calc(100vh - 48px);
 }
 
 .page-header {
   margin-bottom: 24px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  padding: 16px;
 }
 
-.page-header h2 {
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-spacer {
+  width: 120px; /* 占位以保持标题居中 */
+}
+
+.back-section {
+  display: flex;
+  align-items: center;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #303133;
+  transition: all 0.3s;
+  border: 1px solid #dcdfe6;
+  background-color: #fff;
+}
+
+.back-button:hover {
+  background-color: #f5f7fa;
+  border-color: #c0c4cc;
+  color: #409eff;
+  transform: translateY(-1px);
+}
+
+.back-button:active {
+  transform: translateY(0);
+}
+
+.page-title {
   margin: 0;
   font-size: 24px;
+  font-weight: 600;
+  color: #303133;
+  text-align: center;
+  flex: 1;
 }
 </style>
