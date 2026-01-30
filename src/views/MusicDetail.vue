@@ -154,6 +154,8 @@ import { useStore } from 'vuex'
 import { ElMessage, ElIcon, ElDialog, ElCheckboxGroup, ElCheckbox, ElButton, ElAvatar } from 'element-plus'
 import { VideoPlay, Star as Like, Share, ArrowUp, ArrowDown } from '@element-plus/icons-vue'
 import request from '../utils/request'
+import { useCommentLike } from '@/composables/useCommentLike'
+import { useLike } from '@/composables/useLike'
 
 const route = useRoute()
 const router = useRouter()
@@ -209,19 +211,41 @@ const getMusicDetail = () => {
     })
 }
 
-const getComments = () => {
-  request.get(`/comments/music/${musicId.value}`)
-    .then(response => {
-      // 为每个评论添加isLiked属性，默认false
-      comments.value = response.map(comment => ({
+const getComments = async () => {
+  try {
+    const response = await request.get(`/comments/music/${musicId.value}`)
+    
+    // 为每个评论添加isLiked属性，并获取真实的点赞状态
+    const commentsWithStatus = []
+    
+    for (const comment of response) {
+      // 为评论添加默认的isLiked和likeCount
+      const commentWithStatus = {
         ...comment,
-        isLiked: comment.isLiked || false
-      }))
-    })
-    .catch(error => {
-      console.error('Failed to get comments:', error)
-      ElMessage.error('获取评论失败')
-    })
+        isLiked: comment.isLiked || false,
+        likeCount: comment.likeCount || 0
+      }
+      
+      // 如果用户已登录，获取准确的点赞状态
+      if (store.state.isAuthenticated) {
+        try {
+          const statusResponse = await request.get(`/likes/comment/${comment.id}/status`)
+          commentWithStatus.isLiked = statusResponse.liked
+          commentWithStatus.likeCount = statusResponse.likeCount || comment.likeCount || 0
+        } catch (statusError) {
+          console.warn(`Failed to get like status for comment ${comment.id}:`, statusError)
+          // 使用默认值
+        }
+      }
+      
+      commentsWithStatus.push(commentWithStatus)
+    }
+    
+    comments.value = commentsWithStatus
+  } catch (error) {
+    console.error('Failed to get comments:', error)
+    ElMessage.error('获取评论失败')
+  }
 }
 
 const checkIsLiked = () => {
@@ -280,25 +304,27 @@ const handlePlay = () => {
   store.dispatch('playMusic', music)
 }
 
-const handleLike = () => {
+const { toggleLike: toggleMusicLike } = useLike()
+
+const handleLike = async () => {
   if (!store.state.isAuthenticated) {
     ElMessage.warning('请先登录')
     return
   }
   
-  const url = `/likes/music/${musicId.value}`
-  const method = isLiked.value ? 'delete' : 'post'
-  
-  request[method](url)
-    .then(() => {
-      isLiked.value = !isLiked.value
-      music.likeCount += isLiked.value ? 1 : -1
-      ElMessage.success(isLiked.value ? '喜欢成功' : '取消喜欢')
-    })
-    .catch(error => {
-      console.error('Failed to like music:', error)
-      ElMessage.error('操作失败')
-    })
+  try {
+    const response = await toggleMusicLike('music', musicId.value)
+    
+    // 根据后端返回的结果更新状态
+    const wasLiked = isLiked.value
+    isLiked.value = response.liked
+    music.likeCount = response.likeCount || (wasLiked ? music.likeCount - 1 : music.likeCount + 1)
+    
+    ElMessage.success(isLiked.value ? '喜欢成功' : '取消喜欢')
+  } catch (error) {
+    console.error('Failed to like music:', error)
+    // 错误消息已经在组合函数中显示
+  }
 }
 
 const handleShare = () => {
@@ -359,26 +385,7 @@ const handleSubmitComment = () => {
     })
 }
 
-const handleLikeComment = (comment) => {
-  if (!store.state.isAuthenticated) {
-    ElMessage.warning('请先登录')
-    return
-  }
-  
-  const url = `/likes/comment/${comment.id}`
-  const method = comment.isLiked ? 'delete' : 'post'
-  
-  request[method](url)
-    .then(() => {
-      comment.isLiked = !comment.isLiked
-      comment.likeCount += comment.isLiked ? 1 : -1
-      ElMessage.success(comment.isLiked ? '点赞成功' : '取消点赞')
-    })
-    .catch(error => {
-      console.error('Failed to like comment:', error)
-      ElMessage.error('操作失败')
-    })
-}
+const { toggleCommentLike: handleLikeComment } = useCommentLike()
 
 const handleReply = (comment) => {
   if (!store.state.isAuthenticated) {

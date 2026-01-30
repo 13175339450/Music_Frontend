@@ -176,6 +176,8 @@ import { useStore } from 'vuex'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import request from '../utils/request'
 import { More, Star as Like, StarFilled as LikeFilled, ChatDotRound, Share, VideoPlay as Play, Headset as Music } from '@element-plus/icons-vue'
+import { useCommentLike } from '@/composables/useCommentLike'
+import { useLike } from '@/composables/useLike'
 
 const store = useStore()
 const currentUserId = computed(() => store.getters.currentUser?.id)
@@ -317,20 +319,18 @@ const previewImage = (post, index) => {
   }
 }
 
+const { toggleLike: togglePostLike } = useLike()
+
 // 切换点赞
 const toggleLike = async (post) => {
   try {
-    if (post.isLiked) {
-      // 取消点赞
-      await request.delete(`/posts/${post.id}/like`)
-      post.isLiked = false
-      post.likeCount = post.likeCount - 1
-    } else {
-      // 点赞
-      await request.post(`/posts/${post.id}/like`)
-      post.isLiked = true
-      post.likeCount = post.likeCount + 1
-    }
+    const response = await togglePostLike('post', post.id)
+    
+    // 根据后端返回的结果更新状态
+    const wasLiked = post.isLiked
+    post.isLiked = response.liked
+    post.likeCount = response.likeCount || (wasLiked ? post.likeCount - 1 : post.likeCount + 1)
+    
     ElMessage.success(post.isLiked ? '点赞成功' : '取消点赞成功')
   } catch (error) {
     ElMessage.error('点赞操作失败')
@@ -349,11 +349,36 @@ const toggleComments = (post) => {
 const loadComments = async (post) => {
   try {
     const response = await request.get(`/comments/post/${post.id}`)
-    post.comments = response.data.map(comment => ({
-      ...comment,
-      showReply: false,
-      replyContent: ''
-    }))
+    
+    // 为每个评论添加isLiked属性，并获取真实的点赞状态
+    const commentsWithStatus = []
+    
+    for (const comment of response.data) {
+      // 为评论添加默认的isLiked和likeCount
+      const commentWithStatus = {
+        ...comment,
+        isLiked: comment.isLiked || false,
+        likeCount: comment.likeCount || 0,
+        showReply: false,
+        replyContent: ''
+      }
+      
+      // 如果用户已登录，获取准确的点赞状态
+      if (currentUserId.value) {
+        try {
+          const statusResponse = await request.get(`/likes/comment/${comment.id}/status`)
+          commentWithStatus.isLiked = statusResponse.data.liked
+          commentWithStatus.likeCount = statusResponse.data.likeCount || comment.likeCount || 0
+        } catch (statusError) {
+          console.warn(`Failed to get like status for comment ${comment.id}:`, statusError)
+          // 使用默认值
+        }
+      }
+      
+      commentsWithStatus.push(commentWithStatus)
+    }
+    
+    post.comments = commentsWithStatus
   } catch (error) {
     ElMessage.error('加载评论失败')
   }
@@ -386,16 +411,7 @@ const submitComment = async (post) => {
   }
 }
 
-// 切换评论点赞
-const toggleCommentLike = async (comment) => {
-  try {
-    const response = await request.post(`/likes/comment/${comment.id}`)
-    comment.isLiked = response.data.liked
-    comment.likeCount = comment.isLiked ? comment.likeCount + 1 : comment.likeCount - 1
-  } catch (error) {
-    ElMessage.error('点赞操作失败')
-  }
-}
+const { toggleCommentLike } = useCommentLike()
 
 // 回复评论
 const replyComment = (comment) => {
