@@ -161,90 +161,100 @@
           <div class="section-header">
             <h2>内容审核</h2>
           </div>
-          <el-tabs v-model="reviewTab" type="border-card">
-            <el-tab-pane name="music">
-              <template #label>
-                <el-badge :value="pendingMusic.length" :hidden="pendingMusic.length === 0" class="item">
-                  音乐审核
-                </el-badge>
-              </template>
-              <el-table :data="pendingMusic" style="width: 100%" stripe>
-                <el-table-column prop="id" label="ID" width="80" />
-                <el-table-column prop="title" label="标题" />
-                <el-table-column prop="artist" label="歌手" />
-                <el-table-column label="封面" width="100">
-                  <template #default="scope">
-                    <el-image
-                      :src="scope.row.coverPath ? `/api/music/cover/${scope.row.id}` : 'https://via.placeholder.com/50'"
-                      fit="cover"
-                      style="width: 50px; height: 50px; border-radius: 4px"
-                    ></el-image>
-                  </template>
-                </el-table-column>
-                <el-table-column prop="creator" label="上传者" width="120">
-                  <template #default="scope">
-                    {{ scope.row.creator?.nickname || scope.row.creator?.username }}
-                  </template>
-                </el-table-column>
-                <el-table-column prop="createdAt" label="上传时间" width="180" />
-                <el-table-column label="操作" width="150" fixed="right">
-                  <template #default="scope">
-                    <el-button type="success" size="small" @click="handleApproveMusic(scope.row)">
-                      <el-icon><Check /></el-icon>
-                      通过
-                    </el-button>
-                    <el-button type="danger" size="small" @click="handleRejectMusic(scope.row)">
-                      <el-icon><Close /></el-icon>
-                      拒绝
-                    </el-button>
-                  </template>
-                </el-table-column>
-              </el-table>
-            </el-tab-pane>
+          <div class="content-review-section">
+            <el-tabs v-model="reviewTab" type="border-card" class="review-tabs">
+              <el-tab-pane name="music">
+                <template #label>
+                  <el-badge :value="pendingMusic.length" :hidden="pendingMusic.length === 0" class="item">
+                    音乐审核
+                  </el-badge>
+                </template>
+                <div class="review-table">
+                  <el-table :data="pendingMusic" style="width: 100%" stripe :height="400">
+                    <el-table-column prop="id" label="ID" width="80" />
+                    <el-table-column prop="title" label="标题" />
+                    <el-table-column prop="artist" label="歌手" />
+                    <el-table-column label="封面" width="100">
+                      <template #default="scope">
+                        <el-image
+                          :src="scope.row.coverPath ? `/api/music/cover/${scope.row.id}` : 'https://via.placeholder.com/50'"
+                          fit="cover"
+                          style="width: 50px; height: 50px; border-radius: 4px"
+                        ></el-image>
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="creator" label="上传者" width="120">
+                      <template #default="scope">
+                        {{ scope.row.creator?.nickname || scope.row.creator?.username }}
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="createdAt" label="上传时间" width="180" />
+                    <el-table-column label="操作" width="180" fixed="right">
+                      <template #default="scope">
+                        <el-button-group>
+                          <el-button type="success" size="small" @click="handleApproveMusic(scope.row)" class="review-operation-btn">
+                            <el-icon><Check /></el-icon>
+                            通过
+                          </el-button>
+                          <el-button type="danger" size="small" @click="handleRejectMusic(scope.row)" class="review-operation-btn">
+                            <el-icon><Close /></el-icon>
+                            拒绝
+                          </el-button>
+                        </el-button-group>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </div>
+              </el-tab-pane>
 
       
 
         <el-tab-pane name="posts">
-          <template #label>
-            <el-badge :value="pendingPosts.length" :hidden="pendingPosts.length === 0" class="item">
-              动态审核
-            </el-badge>
-          </template>
-          <el-table :data="pendingPosts" style="width: 100%" stripe>
-            <el-table-column prop="id" label="ID" width="80" />
-            <el-table-column label="发布者" width="120">
-              <template #default="scope">
-                {{ scope.row.user?.nickname || scope.row.user?.username }}
-              </template>
-            </el-table-column>
-            <el-table-column prop="content" label="动态内容" width="400">
-              <template #default="scope">
-                <div class="comment-preview">{{ scope.row.content }}</div>
-              </template>
-            </el-table-column>
-            <el-table-column prop="createdAt" label="发布时间" width="180" />
-            <el-table-column label="状态" width="100">
-              <template #default="scope">
-                <el-tag :type="getPostStatusType(scope.row.status)">
-                  {{ getPostStatusText(scope.row.status) }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column label="操作" width="150" fixed="right">
-              <template #default="scope">
-                <el-button type="success" size="small" @click="handleApprovePost(scope.row)">
-                  <el-icon><Check /></el-icon>
-                  通过
-                </el-button>
-                <el-button type="danger" size="small" @click="handleRejectPost(scope.row)">
-                  <el-icon><Close /></el-icon>
-                  拒绝
-                </el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </el-tab-pane>
-          </el-tabs>
+                <template #label>
+                  <el-badge :value="pendingPosts.length" :hidden="pendingPosts.length === 0" class="item">
+                    动态审核
+                  </el-badge>
+                </template>
+                <div class="review-table">
+                  <el-table :data="pendingPosts" style="width: 100%" stripe :height="400">
+                    <el-table-column prop="id" label="ID" width="80" />
+                    <el-table-column label="发布者" width="120">
+                      <template #default="scope">
+                        {{ scope.row.user?.nickname || scope.row.user?.username }}
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="content" label="动态内容" width="400">
+                      <template #default="scope">
+                        <div class="comment-preview">{{ scope.row.content }}</div>
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="createdAt" label="发布时间" width="180" />
+                    <el-table-column label="状态" width="100">
+                      <template #default="scope">
+                        <el-tag :type="getPostStatusType(scope.row.status)">
+                          {{ getPostStatusText(scope.row.status) }}
+                        </el-tag>
+                      </template>
+                    </el-table-column>
+                    <el-table-column label="操作" width="180" fixed="right">
+                      <template #default="scope">
+                        <el-button-group>
+                          <el-button type="success" size="small" @click="handleApprovePost(scope.row)" class="review-operation-btn">
+                            <el-icon><Check /></el-icon>
+                            通过
+                          </el-button>
+                          <el-button type="danger" size="small" @click="handleRejectPost(scope.row)" class="review-operation-btn">
+                            <el-icon><Close /></el-icon>
+                            拒绝
+                          </el-button>
+                        </el-button-group>
+                      </template>
+                    </el-table-column>
+                  </el-table>
+                </div>
+              </el-tab-pane>
+            </el-tabs>
+          </div>
         </el-tab-pane>
 
         <el-tab-pane label="数据统计" name="statistics">
