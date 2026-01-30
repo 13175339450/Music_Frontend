@@ -200,6 +200,8 @@ const getMusicDetail = () => {
   request.get(`/music/detail/${musicId.value}`)
     .then(response => {
       Object.assign(music, response)
+      // 获取音乐详情后立即检查关注状态
+      checkFollowStatus()
     })
     .catch(error => {
       console.error('Failed to get music detail:', error)
@@ -243,6 +245,9 @@ const checkFollowStatus = () => {
       .catch(error => {
         console.error('Failed to check follow status:', error)
       })
+  } else {
+    // 如果用户未登录或没有音乐人ID，则重置关注状态
+    isFollowingMusician.value = false
   }
 }
 
@@ -446,7 +451,6 @@ onMounted(() => {
   getMusicDetail()
   getComments()
   checkIsLiked()
-  checkFollowStatus()
 })
 </script>
 
