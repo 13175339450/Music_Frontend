@@ -12,6 +12,7 @@
         <div v-else-if="followingList.length === 0" class="empty-state">
           <el-icon class="empty-icon"><User /></el-icon>
           <p>你还没有关注任何人</p>
+          <p>去发现一些有趣的用户并关注他们吧</p>
         </div>
 
         <div v-else class="user-grid">
@@ -24,17 +25,17 @@
             <div class="user-info">
               <h3 class="user-name">{{ user.nickname || user.username }}</h3>
               <p class="user-bio">{{ user.bio || '这个人很懒，什么都没写' }}</p>
-             
+
               <div class="user-actions">
                 <el-button
-                  :type="isFollowing(user.id) ? 'default' : 'primary'"
-                  size="small"
-                  @click="handleUnfollow(user)"
-                  :loading="unfollowLoading === user.id"
+                    :type="isFollowing(user.id) ? 'default' : 'primary'"
+                    size="small"
+                    @click="handleUnfollow(user)"
+                    :loading="unfollowLoading === user.id"
                 >
                   {{ isFollowing(user.id) ? '已关注' : '关注' }}
                 </el-button>
-               
+
               </div>
             </div>
           </div>
@@ -132,7 +133,9 @@ onMounted(() => {
 
 <style scoped>
 .following-container {
-  padding: 32px 0;
+  min-height: calc(100vh - 60px);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 24px 0;
 }
 
 .container {
@@ -141,53 +144,76 @@ onMounted(() => {
   padding: 0 20px;
 }
 
+.user-list {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
 .loading {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 64px 0;
+  padding: 60px 0;
   color: #909399;
 }
 
+.loading .el-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+
 .empty-state {
-  text-align: center;
-  padding: 64px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 0;
   color: #909399;
 }
 
 .empty-icon {
   font-size: 64px;
   margin-bottom: 16px;
+  color: #dcdfe6;
+}
+
+.empty-state p {
+  margin-bottom: 12px;
+  font-size: 16px;
+  text-align: center;
 }
 
 .user-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
 }
 
 .user-card {
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   display: flex;
-  gap: 16px;
-  transition: box-shadow 0.3s ease;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  border: 1px solid #ebeef5;
+  border-radius: 8px;
+  transition: all 0.3s;
 }
 
 .user-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
 }
 
 .user-avatar {
-  flex-shrink: 0;
+  margin-bottom: 16px;
 }
 
 .user-info {
-  flex: 1;
-  min-width: 0;
+  text-align: center;
+  width: 100%;
 }
 
 .user-name {
@@ -195,33 +221,28 @@ onMounted(() => {
   font-size: 18px;
   font-weight: 600;
   color: #303133;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .user-bio {
   margin: 0 0 12px 0;
   font-size: 14px;
-  color: #606266;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.4;
+  color: #909399;
+  line-height: 1.5;
+  min-height: 42px;
 }
 
 .user-stats {
   display: flex;
+  justify-content: center;
   gap: 16px;
   margin-bottom: 16px;
-  font-size: 12px;
-  color: #909399;
+  font-size: 14px;
+  color: #606266;
 }
 
 .user-actions {
   display: flex;
   gap: 8px;
+  justify-content: center;
 }
 </style>
