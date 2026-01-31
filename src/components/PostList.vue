@@ -62,7 +62,7 @@
       <div v-if="post.showComments" class="post-comments">
         <div v-for="comment in post.comments" :key="comment.id" class="comment-item">
           <div class="comment-header">
-            <el-avatar :src="comment.user.avatar" size="small">
+            <el-avatar :src="comment.user.avatar" size="large">
               {{ (comment.user.nickname || comment.user.username || '?').charAt(0) }}
             </el-avatar>
             <div class="comment-user">{{ comment.user.nickname || comment.user.username }}</div>
@@ -326,42 +326,49 @@ const toggleComments = (post) => {
 
 // 加载评论
 const loadComments = async (post) => {
-  try {
-    const response = await request.get(`/comments/post/${post.id}`)
-    
-    // 为每个评论添加isLiked属性，并获取真实的点赞状态
-    const commentsWithStatus = []
-    
-    for (const comment of response.data) {
-      // 为评论添加默认的isLiked和likeCount
-      const commentWithStatus = {
-        ...comment,
-        isLiked: comment.isLiked || false,
-        likeCount: comment.likeCount || 0,
-        showReply: false,
-        replyContent: ''
-      }
+    try {
+      const response = await request.get(`/comments/post/${post.id}`)
       
-      // 如果用户已登录，获取准确的点赞状态
-      if (currentUserId.value) {
-        try {
-          const statusResponse = await request.get(`/likes/comment/${comment.id}/status`)
-          commentWithStatus.isLiked = statusResponse.data.liked
-          commentWithStatus.likeCount = statusResponse.data.likeCount || comment.likeCount || 0
-        } catch (statusError) {
-          console.warn(`Failed to get like status for comment ${comment.id}:`, statusError)
-          // 使用默认值
+      // 确保 response.data 存在且是一个数组
+      const commentsData = response.data || [];
+      
+      // 为每个评论添加isLiked属性，并获取真实的点赞状态
+      const commentsWithStatus = []
+      
+      for (const comment of commentsData) {
+        // 为评论添加默认的isLiked和likeCount
+        const commentWithStatus = {
+          ...comment,
+          isLiked: comment.isLiked || false,
+          likeCount: comment.likeCount || 0,
+          showReply: false,
+          replyContent: ''
         }
+        
+        // 如果用户已登录，获取准确的点赞状态
+        if (currentUserId.value) {
+          try {
+            const statusResponse = await request.get(`/likes/comment/${comment.id}/status`)
+            commentWithStatus.isLiked = statusResponse.data.liked
+            commentWithStatus.likeCount = statusResponse.data.likeCount || comment.likeCount || 0
+          } catch (statusError) {
+            console.warn(`Failed to get like status for comment ${comment.id}:`, statusError)
+            // 使用默认值
+          }
+        }
+        
+        commentsWithStatus.push(commentWithStatus)
       }
       
-      commentsWithStatus.push(commentWithStatus)
+      post.comments = commentsWithStatus
+    } catch (error) {
+      console.error('加载评论失败:', error);
+      // 即使加载失败也初始化为空数组，避免后续访问出错
+      post.comments = [];
+      // 可以选择性地提示用户（如果错误不是因为无数据）
+      // ElMessage.error('加载评论失败')
     }
-    
-    post.comments = commentsWithStatus
-  } catch (error) {
-    ElMessage.error('加载评论失败')
   }
-}
 
 // 提交评论
 const submitComment = async (post) => {
