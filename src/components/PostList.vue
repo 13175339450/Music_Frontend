@@ -269,8 +269,8 @@ const submitEdit = async () => {
       content: editForm.value.content
     }
     const response = await request.put(`/posts/${editForm.value.id}`, payload)
-    // 更新本地列表
-    const updated = response.data || payload
+    // 更新本地列表 — request 已返回实际数据（或兼容 axios 响应）
+    const updated = response?.data || response || payload
     const idx = props.posts.findIndex(p => p.id === editForm.value.id)
     if (idx !== -1) {
       props.posts[idx].content = updated.content
@@ -340,76 +340,62 @@ const toggleComments = (post) => {
 
 // 加载评论
 const loadComments = async (post) => {
-    try {
-      const response = await request.get(`/comments/post/${post.id}`)
-      
-      // 确保 response.data 存在且是一个数组
-      const commentsData = response.data || [];
-      
-      // 为每个评论添加isLiked属性，并获取真实的点赞状态
-      const commentsWithStatus = []
-      
-      for (const comment of commentsData) {
-        // 为评论添加默认的isLiked和likeCount
-        const commentWithStatus = {
-          ...comment,
-          isLiked: comment.isLiked || false,
-          likeCount: comment.likeCount || 0,
-          showReply: false,
-          replyContent: ''
-        }
-        
-        // 如果用户已登录，获取准确的点赞状态
-        if (currentUserId.value) {
-          try {
-            const statusResponse = await request.get(`/likes/comment/${comment.id}/status`)
-            // 确保statusResponse.data存在
-            const statusData = statusResponse.data || {};
-            commentWithStatus.isLiked = statusData.liked || false;
-            commentWithStatus.likeCount = statusData.likeCount || commentWithStatus.likeCount
-          } catch (statusError) {
-            console.warn(`Failed to get like status for comment ${comment.id}:`, statusError)
-            // 使用默认值
-          }
-        }
-        
-        commentsWithStatus.push(commentWithStatus)
+  try {
+    const response = await request.get(`/comments/post/${post.id}`)
+
+    // request 拦截器已返回 response.data，因此这里要兼容两种情况
+    const commentsData = Array.isArray(response) ? response : (response?.data || response || [])
+
+    const commentsWithStatus = []
+
+    for (const comment of commentsData) {
+      const commentWithStatus = {
+        ...comment,
+        isLiked: comment.isLiked || false,
+        likeCount: comment.likeCount || 0,
+        showReply: false,
+        replyContent: ''
       }
-      
-      post.comments = commentsWithStatus
-    } catch (error) {
-      console.error('加载评论失败:', error);
-      // 即使加载失败也初始化为空数组，避免后续访问出错
-      post.comments = [];
-      // 可以选择性地提示用户（如果错误不是因为无数据）
-      // ElMessage.error('加载评论失败')
+
+      if (currentUserId.value) {
+        try {
+          const statusResponse = await request.get(`/likes/comment/${comment.id}/status`)
+          const statusData = statusResponse?.data || statusResponse || {}
+          commentWithStatus.isLiked = statusData.liked || false
+          commentWithStatus.likeCount = typeof statusData.likeCount === 'number' ? statusData.likeCount : commentWithStatus.likeCount
+        } catch (statusError) {
+          console.warn(`Failed to get like status for comment ${comment.id}:`, statusError)
+        }
+      }
+
+      commentsWithStatus.push(commentWithStatus)
     }
+
+    post.comments = commentsWithStatus
+  } catch (error) {
+    console.error('加载评论失败:', error)
+    post.comments = []
   }
+}
 
 // 提交评论
 const submitComment = async (post) => {
   if (!post.newComment.trim()) return
-  
+
   try {
-    const comment = {
+    const payload = {
       content: post.newComment,
       postId: post.id
     }
-    const response = await request.post('/comments', comment)
-    
-    // 确保评论区域展开
+    const response = await request.post('/comments', payload)
+
     post.showComments = true
-    
-    // 添加到评论列表
     if (!post.comments) post.comments = []
-    
-    // 检查响应数据是否存在
-    const responseData = response.data || {};
-    
-    // 创建新评论对象，适配后端返回的数据结构
+
+    const responseData = response?.data || response || {}
+
     const newComment = {
       ...responseData,
-      // 适配后端返回的字段名
       createdAt: responseData.createTime || responseData.createdAt,
       isLiked: responseData.isLiked || false,
       likeCount: responseData.likeCount || 0,
@@ -423,15 +409,14 @@ const submitComment = async (post) => {
         avatar: store.getters.currentUser?.avatar
       }
     }
-    
+
     post.comments.unshift(newComment)
-    
-    post.commentCount++
+    post.commentCount = (post.commentCount || 0) + 1
     post.newComment = ''
     ElMessage.success('评论成功')
   } catch (error) {
     console.error('评论失败:', error)
-    ElMessage.error('评论失败: ' + (error.response?.data?.message || error.message || '未知错误'))
+    ElMessage.error('评论失败: ' + (error?.response?.data?.message || error?.message || '未知错误'))
   }
 }
 
@@ -445,20 +430,21 @@ const replyComment = (comment) => {
 // 提交回复
 const submitReply = async (post, comment) => {
   if (!comment.replyContent.trim()) return
-  
+
   try {
-    const reply = {
+    const payload = {
       content: comment.replyContent,
       postId: post.id,
       parentCommentId: comment.id
     }
-    const response = await request.post('/comments', reply)
-    
-    // 添加到回复列表
+    const response = await request.post('/comments', payload)
+
+    const replyData = response?.data || response || {}
+
     if (!comment.replies) comment.replies = []
-    comment.replies.push(response.data)
-    
-    post.commentCount++
+    comment.replies.push(replyData)
+
+    post.commentCount = (post.commentCount || 0) + 1
     comment.replyContent = ''
     comment.showReply = false
     ElMessage.success('回复成功')
