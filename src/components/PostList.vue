@@ -22,18 +22,7 @@
             </div>
           </div>
         </div>
-        <el-dropdown @command="(command) => handleDropdownCommand(command, post)">
-          <el-button type="text" size="small">
-            <el-icon><More /></el-icon>
-          </el-button>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item command="edit" v-if="isCurrentUser(post.user.id)">编辑</el-dropdown-item>
-              <el-dropdown-item command="delete" v-if="isCurrentUser(post.user.id)">删除</el-dropdown-item>
-              <el-dropdown-item command="report">举报</el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
+
       </div>
       
       <div class="post-content">
@@ -136,8 +125,12 @@
     </div>
     
     <!-- 加载更多 -->
-    <div v-if="hasMore" class="load-more">
-      <el-button type="primary" @click="loadMorePosts">加载更多</el-button>
+    <div v-if="hasMore || loadingMore" class="load-more">
+      <el-button v-if="!loadingMore" type="primary" @click="loadMorePosts">加载更多</el-button>
+      <el-button v-else type="primary" :loading="true">加载中...</el-button>
+    </div>
+    <div v-if="!hasMore && posts.length > 0" class="no-more">
+      <span>没有更多内容了</span>
     </div>
     
     <!-- 编辑动态弹窗 -->
@@ -193,6 +186,7 @@ const props = defineProps({
 
 // 状态
 const hasMore = ref(true)
+const loadingMore = ref(false)
 const showImageViewer = ref(false)
 const imageUrls = ref([])
 const imageIndex = ref(0)
@@ -247,22 +241,7 @@ const isCurrentUser = (userId) => {
   return currentUserId.value === userId
 }
 
-// 处理下拉菜单命令
-const handleDropdownCommand = (command, post) => {
-  switch (command) {
-    case 'edit':
-      editForm.value.id = post.id
-      editForm.value.content = post.content || ''
-      showEditModal.value = true
-      break
-    case 'delete':
-      deletePost(post)
-      break
-    case 'report':
-      // 举报动态
-      break
-  }
-}
+
 
 // 提交编辑
 const submitEdit = async () => {
@@ -463,8 +442,14 @@ const sharePost = async (post) => {
 
 // 加载更多动态
 const loadMorePosts = () => {
+  if (loadingMore.value) return; // 防止重复点击
+  
+  loadingMore.value = true;
   // 触发父组件加载更多
-  emit('loadMore')
+  emit('loadMore', () => {
+    // 在父组件完成加载后调用此回调来重置加载状态
+    loadingMore.value = false;
+  });
 }
 
 // 定义事件
@@ -693,5 +678,12 @@ const emit = defineEmits(['postDeleted', 'loadMore'])
 .load-more {
   text-align: center;
   padding: 20px;
+}
+
+.no-more {
+  text-align: center;
+  padding: 20px;
+  color: #999;
+  font-size: 14px;
 }
 </style>
