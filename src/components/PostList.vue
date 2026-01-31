@@ -200,7 +200,21 @@ const editForm = ref({
 
 // 格式化时间
 const formatTime = (timeString) => {
-  const date = new Date(timeString)
+  // 如果传入的是对象而不是字符串，先提取时间字段
+  let dateString = timeString;
+  if (typeof timeString === 'object' && timeString !== null) {
+    dateString = timeString.createTime || timeString.createdAt || timeString;
+  }
+  
+  // 如果是字符串但包含日期时间格式，直接使用
+  const date = new Date(dateString);
+  
+  // 检查日期是否有效
+  if (isNaN(date.getTime())) {
+    console.warn('Invalid date:', dateString);
+    return '刚刚';
+  }
+  
   const now = new Date()
   const diff = now - date
   
@@ -349,8 +363,10 @@ const loadComments = async (post) => {
         if (currentUserId.value) {
           try {
             const statusResponse = await request.get(`/likes/comment/${comment.id}/status`)
-            commentWithStatus.isLiked = statusResponse.data.liked
-            commentWithStatus.likeCount = statusResponse.data.likeCount || comment.likeCount || 0
+            // 确保statusResponse.data存在
+            const statusData = statusResponse.data || {};
+            commentWithStatus.isLiked = statusData.liked || false;
+            commentWithStatus.likeCount = statusData.likeCount || commentWithStatus.likeCount
           } catch (statusError) {
             console.warn(`Failed to get like status for comment ${comment.id}:`, statusError)
             // 使用默认值
@@ -381,19 +397,41 @@ const submitComment = async (post) => {
     }
     const response = await request.post('/comments', comment)
     
+    // 确保评论区域展开
+    post.showComments = true
+    
     // 添加到评论列表
     if (!post.comments) post.comments = []
-    post.comments.unshift({
-      ...response.data,
+    
+    // 检查响应数据是否存在
+    const responseData = response.data || {};
+    
+    // 创建新评论对象，适配后端返回的数据结构
+    const newComment = {
+      ...responseData,
+      // 适配后端返回的字段名
+      createdAt: responseData.createTime || responseData.createdAt,
+      isLiked: responseData.isLiked || false,
+      likeCount: responseData.likeCount || 0,
+      replies: responseData.replies || [],
       showReply: false,
-      replyContent: ''
-    })
+      replyContent: '',
+      user: responseData.user || {
+        id: currentUserId.value,
+        username: store.getters.currentUser?.username,
+        nickname: store.getters.currentUser?.nickname,
+        avatar: store.getters.currentUser?.avatar
+      }
+    }
+    
+    post.comments.unshift(newComment)
     
     post.commentCount++
     post.newComment = ''
     ElMessage.success('评论成功')
   } catch (error) {
-    ElMessage.error('评论失败')
+    console.error('评论失败:', error)
+    ElMessage.error('评论失败: ' + (error.response?.data?.message || error.message || '未知错误'))
   }
 }
 
