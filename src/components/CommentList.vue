@@ -63,9 +63,41 @@ onMounted(fetchComments)
 watch(() => props.postId, (v) => { if (v) fetchComments() })
 
 const formatTime = (timeString) => {
-  if (!timeString) return ''
-  const date = new Date(timeString)
-  if (isNaN(date.getTime())) return timeString
+  const toDate = (input) => {
+    if (!input) return null
+    let s = input
+    if (typeof input === 'object' && input !== null) {
+      s = input.createTime || input.createdAt || input
+    }
+    if (typeof s === 'number') return new Date(s)
+    if (typeof s !== 'string') return null
+
+    s = s.trim()
+    if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/.test(s)) {
+      s = s.replace(' ', 'T')
+    }
+
+    let d = new Date(s)
+    if (!isNaN(d.getTime())) return d
+
+    const alt = s.replace(/-/g, '/')
+    d = new Date(alt)
+    if (!isNaN(d.getTime())) return d
+
+    return null
+  }
+
+  const date = toDate(timeString)
+  if (!date) return ''
+  const now = new Date()
+  const diff = now - date
+  const minutes = Math.floor(diff / 60000)
+  const hours = Math.floor(diff / 3600000)
+  const days = Math.floor(diff / 86400000)
+  if (minutes < 1) return '刚刚'
+  if (minutes < 60) return `${minutes}分钟前`
+  if (hours < 24) return `${hours}小时前`
+  if (days < 30) return `${days}天前`
   return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2,'0')}-${date.getDate().toString().padStart(2,'0')} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`
 }
 </script>

@@ -77,35 +77,6 @@
               </el-icon>
               {{ comment.likeCount }}
             </span>
-            <span class="comment-action" @click="replyComment(comment)">回复</span>
-          </div>
-          
-          <!-- 回复输入框 -->
-          <div v-if="comment.showReply" class="reply-input">
-            <el-input
-              v-model="comment.replyContent"
-              placeholder="回复..."
-              @keyup.enter="submitReply(post, comment)"
-            >
-              <template #append>
-                <el-button @click="submitReply(post, comment)">发送</el-button>
-              </template>
-            </el-input>
-          </div>
-          
-          <!-- 回复列表 -->
-          <div v-if="comment.replies && comment.replies.length > 0" class="replies-list">
-            <div v-for="reply in comment.replies" :key="reply.id" class="reply-item">
-              <div class="reply-header">
-                <el-avatar :src="reply.user.avatar" size="small"></el-avatar>
-                <div class="reply-user">{{ reply.user.nickname || reply.user.username }}</div>
-                <div class="reply-time">{{ formatTime(reply.createdAt) }}</div>
-              </div>
-              <div class="reply-content">
-                <span class="reply-to">@{{ reply.parentComment.user.nickname || reply.parentComment.user.username }}: </span>
-                {{ reply.content }}
-              </div>
-            </div>
           </div>
         </div>
         
@@ -198,36 +169,51 @@ const editForm = ref({
   content: ''
 })
 
-// 格式化时间
+// 格式化时间：支持多种后端时间字符串（例如 "YYYY-MM-DD HH:mm:ss"）
 const formatTime = (timeString) => {
-  // 如果传入的是对象而不是字符串，先提取时间字段
-  let dateString = timeString;
-  if (typeof timeString === 'object' && timeString !== null) {
-    dateString = timeString.createTime || timeString.createdAt || timeString;
+  const toDate = (input) => {
+    if (!input) return null
+    let s = input
+    if (typeof input === 'object' && input !== null) {
+      s = input.createTime || input.createdAt || input
+    }
+    if (typeof s === 'number') return new Date(s)
+    if (typeof s !== 'string') return null
+
+    s = s.trim()
+    // 将常见的 "YYYY-MM-DD HH:mm:ss" 转为 ISO 格式 "YYYY-MM-DDTHH:mm:ss"
+    if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/.test(s)) {
+      s = s.replace(' ', 'T')
+    }
+
+    // 尝试直接解析
+    let d = new Date(s)
+    if (!isNaN(d.getTime())) return d
+
+    // Safari 兼容：把 - 换成 /
+    const alt = s.replace(/-/g, '/')
+    d = new Date(alt)
+    if (!isNaN(d.getTime())) return d
+
+    return null
   }
-  
-  // 如果是字符串但包含日期时间格式，直接使用
-  const date = new Date(dateString);
-  
-  // 检查日期是否有效
-  if (isNaN(date.getTime())) {
-    console.warn('Invalid date:', dateString);
-    return '刚刚';
-  }
-  
+
+  const date = toDate(timeString)
+  if (!date) return '刚刚'
+
   const now = new Date()
   const diff = now - date
-  
+
   const minutes = Math.floor(diff / 60000)
   const hours = Math.floor(diff / 3600000)
   const days = Math.floor(diff / 86400000)
-  
+
   if (minutes < 1) return '刚刚'
   if (minutes < 60) return `${minutes}分钟前`
   if (hours < 24) return `${hours}小时前`
   if (days < 30) return `${days}天前`
-  
-  return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`
+
+  return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2,'0')}:${date.getMinutes().toString().padStart(2,'0')}`
 }
 
 // 获取动态状态文本
@@ -352,9 +338,7 @@ const loadComments = async (post) => {
       const commentWithStatus = {
         ...comment,
         isLiked: comment.isLiked || false,
-        likeCount: comment.likeCount || 0,
-        showReply: false,
-        replyContent: ''
+        likeCount: comment.likeCount || 0
       }
 
       if (currentUserId.value) {
@@ -400,8 +384,6 @@ const submitComment = async (post) => {
       isLiked: responseData.isLiked || false,
       likeCount: responseData.likeCount || 0,
       replies: responseData.replies || [],
-      showReply: false,
-      replyContent: '',
       user: responseData.user || {
         id: currentUserId.value,
         username: store.getters.currentUser?.username,
@@ -422,36 +404,7 @@ const submitComment = async (post) => {
 
 const { toggleCommentLike } = useCommentLike()
 
-// 回复评论
-const replyComment = (comment) => {
-  comment.showReply = !comment.showReply
-}
-
-// 提交回复
-const submitReply = async (post, comment) => {
-  if (!comment.replyContent.trim()) return
-
-  try {
-    const payload = {
-      content: comment.replyContent,
-      postId: post.id,
-      parentCommentId: comment.id
-    }
-    const response = await request.post('/comments', payload)
-
-    const replyData = response?.data || response || {}
-
-    if (!comment.replies) comment.replies = []
-    comment.replies.push(replyData)
-
-    post.commentCount = (post.commentCount || 0) + 1
-    comment.replyContent = ''
-    comment.showReply = false
-    ElMessage.success('回复成功')
-  } catch (error) {
-    ElMessage.error('回复失败')
-  }
-}
+// 回复功能已移除
 
 // 分享动态
 const sharePost = async (post) => {
@@ -611,7 +564,7 @@ const emit = defineEmits(['postDeleted', 'loadMore'])
 }
 
 .post-comments {
-  background-color: #fafafa;
+  background-color: #cbd0d6;
   padding: 16px;
   border-radius: 8px;
 }
@@ -660,33 +613,7 @@ const emit = defineEmits(['postDeleted', 'loadMore'])
   color: #1890ff;
 }
 
-.reply-input {
-  margin-top: 12px;
-  margin-left: 40px;
-}
-
-.replies-list {
-  margin-top: 12px;
-  margin-left: 40px;
-  border-left: 2px solid #e8e8e8;
-  padding-left: 16px;
-}
-
-.reply-item {
-  margin-bottom: 12px;
-}
-
-.reply-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 4px;
-}
-
-.reply-user {
-  font-weight: 500;
-  font-size: 13px;
-}
+/* reply styles removed with reply feature */
 
 .reply-time {
   font-size: 11px;
