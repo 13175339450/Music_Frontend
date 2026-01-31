@@ -118,7 +118,7 @@ const handleLogin = async () => {
         errorMsg = error.response.data.message
       }
     }
-    ElMessage.error(errorMsg)
+    ElMessage.error("账号或密码错误")
   } finally {
     loading.value = false
     console.log('登录流程结束')

@@ -32,10 +32,17 @@ request.interceptors.response.use(
   error => {
     // 处理401错误（未授权）
     if (error.response && error.response.status === 401) {
+      // 对于登录接口，不做全局跳转，让页面自行处理错误提示
+      const reqUrl = error.config && error.config.url ? error.config.url : ''
+      const isLoginRequest = reqUrl.includes('/auth/login')
+
       // 清除用户信息
       store.dispatch('logout')
-      // 跳转到登录页面
-      window.location.href = '/login'
+
+      if (!isLoginRequest) {
+        // 跳转到登录页面（非登录请求触发）
+        window.location.href = '/login'
+      }
     }
     return Promise.reject(error)
   }

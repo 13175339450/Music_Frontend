@@ -42,23 +42,23 @@
 
         </div>
         
-
-
-        <!-- 最近播放 -->
-        <div class="recent-plays">
-          <h3>最近播放</h3>
-          <div v-if="recentPlays.length > 0" class="music-list">
-            <div v-for="music in recentPlays" :key="music.id" class="music-item">
-              <div class="music-cover placeholder"></div>
-              <div class="music-detail">
-                <h4>{{ music.title }}</h4>
-                <p>{{ music.artist }}</p>
+        <!-- 我的动态（当前用户发布的所有动态） -->
+        <div class="my-posts section">
+          <div class="section-header">
+            <h3>我的动态</h3>
+          </div>
+          <div v-if="myPosts.length > 0" class="posts-list">
+            <div v-for="post in myPosts" :key="post.id" class="post-item">
+              <div class="post-content">{{ post.content }}</div>
+              <div class="post-meta">
+                <span>点赞 {{ post.likeCount || 0 }}</span>
+                <span>评论 {{ post.commentCount || 0 }}</span>
+                <span>时间 {{ post.createTime || post.createdAt || post.updatedAt }}</span>
               </div>
-              <el-button type="primary" size="small" @click="play(music)">播放</el-button>
             </div>
           </div>
           <div v-else class="empty-state">
-            <p>暂无最近播放记录</p>
+            <p>你还没有发布任何动态</p>
           </div>
         </div>
       </div>
@@ -137,8 +137,8 @@ const userInfo = ref({
   postCount: 0
 })
 
-// 最近播放
-const recentPlays = ref([])
+// 我发布的动态
+const myPosts = ref([])
 
 // 返回上一页
 const goBack = () => {
@@ -287,6 +287,8 @@ const loadUserInfo = async () => {
       editForm.username = response.username || ''
             editForm.email = response.email || ''
       console.log('用户信息加载完成:', userInfo.value)
+      // 加载当前用户的动态
+      loadMyPosts()
     } else {
       console.error('用户信息API返回数据格式错误:', response)
       ElMessage.error('获取用户信息失败：数据格式错误')
@@ -312,24 +314,16 @@ const loadUserInfo = async () => {
 
 
 
-// 加载最近播放
-const loadRecentPlays = async () => {
+// 加载当前用户发布的动态
+const loadMyPosts = async () => {
   try {
-    console.log('开始加载最近播放...')
-    const response = await request.get('/user/recent-plays')
-    console.log('最近播放API响应:', response)
-    
-    // 确保response是数组
-    recentPlays.value = Array.isArray(response) ? response : []
-    console.log('最近播放加载完成:', recentPlays.value)
+    const userId = userInfo.value?.id
+    if (!userId) return
+    const res = await request.get(`/posts/user/${userId}`)
+    myPosts.value = Array.isArray(res) ? res : []
   } catch (error) {
-    console.error('获取最近播放异常:', error)
-    console.error('错误响应:', error.response)
-    if (error.response) {
-      console.error('错误状态:', error.response.status)
-      console.error('错误数据:', error.response.data)
-    }
-    ElMessage.error('获取最近播放记录失败')
+    console.error('获取我的动态失败:', error)
+    ElMessage.error('获取我的动态失败')
   }
 }
 
@@ -397,7 +391,6 @@ onMounted(() => {
   
   console.log('开始加载用户信息...')
   loadUserInfo()
-  loadRecentPlays()
 })
 </script>
 
@@ -503,73 +496,77 @@ onMounted(() => {
 
 
 
-.recent-plays {
+.my-posts.section {
   background: #fff;
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
-.recent-plays h3 {
-  margin: 0 0 20px 0;
-  font-size: 20px;
-  color: #303133;
+.my-posts h3 {
+  margin: 0 0 16px 0;
+  font-size: 22px;
+  color: #111827;
 }
 
-.music-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.music-item {
-  display: flex;
-  align-items: center;
+.posts-list {
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 16px;
-  padding: 12px;
+}
+
+.post-item {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+  align-items: flex-start;
+  box-shadow: 0 6px 18px rgba(16, 24, 40, 0.04);
+  border: 1px solid rgba(16,24,40,0.04);
+}
+
+.post-cover {
+  width: 140px;
+  height: 90px;
   border-radius: 8px;
-  background: #f5f7fa;
-  transition: background-color 0.3s;
-}
-
-.music-item:hover {
-  background: #e6f7ff;
-}
-
-.music-cover.placeholder {
-  width: 60px;
-  height: 60px;
-  border-radius: 6px;
-  background: linear-gradient(135deg, #a0c4ff 0%, #cdb4db 100%);
+  background: #eef2ff;
   flex-shrink: 0;
+  object-fit: cover;
 }
 
-.music-detail {
+.post-content {
   flex: 1;
-  min-width: 0;
 }
 
-.music-detail h4 {
-  margin: 0 0 4px 0;
+.post-text {
   font-size: 16px;
-  color: #303133;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: #0f1724;
+  margin-bottom: 8px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
-.music-detail p {
-  margin: 0;
-  font-size: 14px;
-  color: #606266;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.post-meta {
+  margin-top: 6px;
+  color: #6b7280;
+  font-size: 13px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
 }
+
+.meta-sep { width:4px; height:4px; background:#d1d5db; border-radius:50%; display:inline-block }
 
 .empty-state {
   text-align: center;
   padding: 40px 0;
   color: #909399;
+}
+
+@media (max-width: 720px) {
+  .post-item { flex-direction: column; }
+  .post-cover { width: 100%; height: 160px; }
 }
 </style>
