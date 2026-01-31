@@ -1,12 +1,13 @@
 <template>
   <div class="music-detail-container">
     <div class="container">
-      <el-page-header @back="goBack" content="音乐详情" style="margin-bottom: 24px" />
+      <el-page-header @back="goBack" content="音乐详情" style="margin-bottom: 24px"/>
       <div class="music-info-section">
         <div class="music-cover-large">
           <el-image :src="`/api/music/cover/${music.id}`" fit="cover" style="width: 100%; height: 100%;">
             <template #error>
-              <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #a0c4ff 0%, #cdb4db 100%);"></div>
+              <div
+                  style="width: 100%; height: 100%; background: linear-gradient(135deg, #a0c4ff 0%, #cdb4db 100%);"></div>
             </template>
           </el-image>
         </div>
@@ -20,30 +21,36 @@
           </div>
           <div class="music-artist-info">
             <span class="artist-label">音乐人：</span>
-            <router-link :to="`/musician/${music.musicianId}`" class="artist-link">
-              {{ music.artist }}
-            </router-link>
+            <span style="cursor: default; color: skyblue">
+    {{ music.artist }}
+  </span>
             <el-button
-              v-if="store.state.isAuthenticated && music.musicianId"
-              :type="isFollowingMusician ? 'default' : 'primary'"
-              size="small"
-              @click="handleFollowMusician"
-              class="follow-btn"
+                v-if="store.state.isAuthenticated && music.musicianId"
+                :type="isFollowingMusician ? 'default' : 'primary'"
+                size="small"
+                @click="handleFollowMusician"
+                class="follow-btn"
             >
               {{ isFollowingMusician ? '已关注' : '关注' }}
             </el-button>
           </div>
           <div class="music-actions">
             <el-button type="primary" size="large" @click="handlePlay">
-              <el-icon><VideoPlay /></el-icon>
+              <el-icon>
+                <VideoPlay/>
+              </el-icon>
               {{ isPlaying ? '暂停' : '播放' }}
             </el-button>
             <el-button type="default" @click="handleLike">
-              <el-icon><Like /></el-icon>
+              <el-icon>
+                <Like/>
+              </el-icon>
               {{ isLiked ? '已喜欢' : '喜欢' }}
             </el-button>
             <el-button type="default" @click="handleShare">
-              <el-icon><Share /></el-icon>
+              <el-icon>
+                <Share/>
+              </el-icon>
               分享
             </el-button>
           </div>
@@ -58,11 +65,11 @@
         <h2>评论区</h2>
         <div class="comment-input">
           <el-input
-            v-model="commentContent"
-            type="textarea"
-            placeholder="写下你的评论..."
-            :rows="3"
-            @keyup.enter="handleSubmitComment"
+              v-model="commentContent"
+              type="textarea"
+              placeholder="写下你的评论..."
+              :rows="3"
+              @keyup.enter="handleSubmitComment"
           ></el-input>
           <el-button type="primary" @click="handleSubmitComment" style="margin-top: 8px">
             发表评论
@@ -72,7 +79,7 @@
           <div v-for="comment in comments" :key="comment.id" class="comment-item">
             <div class="comment-header">
               <el-avatar :size="40" :src="comment.user.avatar" class="user-avatar">
-                 {{ (comment.user.nickname || comment.user.username || '?').charAt(0) }}
+                {{ (comment.user.nickname || comment.user.username || '?').charAt(0) }}
               </el-avatar>
               <div class="user-info">
                 <span class="username">{{ comment.user.nickname || comment.user.username }}</span>
@@ -82,20 +89,22 @@
             <div class="comment-content">{{ comment.content }}</div>
             <div class="comment-actions">
               <el-button type="text" size="small" @click="handleLikeComment(comment)">
-                <el-icon><Like /></el-icon>
+                <el-icon>
+                  <Like/>
+                </el-icon>
                 {{ comment.likeCount }} 赞
               </el-button>
               <el-button type="text" size="small" @click="handleReply(comment)">
                 回复
               </el-button>
             </div>
-            
+
             <!-- 回复列表 -->
             <div v-if="comment.replies && comment.replies.length > 0" class="replies-list">
               <div v-for="reply in getVisibleReplies(comment)" :key="reply.id" class="reply-item">
                 <div class="comment-header">
                   <el-avatar :size="32" :src="reply.user.avatar" class="user-avatar">
-                     {{ (reply.user.nickname || reply.user.username || '?').charAt(0) }}
+                    {{ (reply.user.nickname || reply.user.username || '?').charAt(0) }}
                   </el-avatar>
                   <div class="user-info">
                     <span class="username">{{ reply.user.nickname || reply.user.username }}</span>
@@ -104,14 +113,15 @@
                 </div>
                 <div class="comment-content">{{ reply.content }}</div>
               </div>
-              
+
               <!-- 展开/收起按钮 -->
-              <div v-if="shouldShowExpandButton(comment)" class="expand-replies-btn" @click="toggleExpandReplies(comment.id)">
+              <div v-if="shouldShowExpandButton(comment)" class="expand-replies-btn"
+                   @click="toggleExpandReplies(comment.id)">
                 <span class="expand-text">
                   {{ expandedReplies.has(comment.id) ? '收起' : `展开全部 ${comment.replies.length} 条回复` }}
                 </span>
                 <el-icon class="expand-icon">
-                  <component :is="expandedReplies.has(comment.id) ? 'ArrowUp' : 'ArrowDown'" />
+                  <component :is="expandedReplies.has(comment.id) ? 'ArrowUp' : 'ArrowDown'"/>
                 </el-icon>
               </div>
             </div>
@@ -119,12 +129,12 @@
             <!-- 回复输入框 -->
             <div v-if="showReplyInput === comment.id" class="reply-input">
               <el-input
-                v-model="replyContent"
-                type="textarea"
-                placeholder="写下你的回复..."
-                :rows="2"
-                @keyup.enter="handleSubmitReply"
-                style="margin-bottom: 8px"
+                  v-model="replyContent"
+                  type="textarea"
+                  placeholder="写下你的回复..."
+                  :rows="2"
+                  @keyup.enter="handleSubmitReply"
+                  style="margin-bottom: 8px"
               ></el-input>
               <div class="reply-input-actions">
                 <el-button type="primary" size="small" @click="handleSubmitReply">
@@ -148,14 +158,14 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useStore } from 'vuex'
-import { ElMessage, ElIcon, ElDialog, ElCheckboxGroup, ElCheckbox, ElButton, ElAvatar } from 'element-plus'
-import { VideoPlay, Star as Like, Share, ArrowUp, ArrowDown } from '@element-plus/icons-vue'
+import {ref, reactive, onMounted, computed} from 'vue'
+import {useRoute, useRouter} from 'vue-router'
+import {useStore} from 'vuex'
+import {ElMessage, ElIcon, ElDialog, ElCheckboxGroup, ElCheckbox, ElButton, ElAvatar} from 'element-plus'
+import {VideoPlay, Star as Like, Share, ArrowUp, ArrowDown} from '@element-plus/icons-vue'
 import request from '../utils/request'
-import { useCommentLike } from '@/composables/useCommentLike'
-import { useLike } from '@/composables/useLike'
+import {useCommentLike} from '@/composables/useCommentLike'
+import {useLike} from '@/composables/useLike'
 
 const route = useRoute()
 const router = useRouter()
@@ -192,7 +202,6 @@ const expandedReplies = ref(new Set())
 const MAX_VISIBLE_REPLIES = 2
 
 
-
 const formatDate = (dateString) => {
   const date = new Date(dateString)
   return date.toLocaleString()
@@ -200,24 +209,24 @@ const formatDate = (dateString) => {
 
 const getMusicDetail = () => {
   request.get(`/music/detail/${musicId.value}`)
-    .then(response => {
-      Object.assign(music, response)
-      // 获取音乐详情后立即检查关注状态
-      checkFollowStatus()
-    })
-    .catch(error => {
-      console.error('Failed to get music detail:', error)
-      ElMessage.error('获取音乐详情失败')
-    })
+      .then(response => {
+        Object.assign(music, response)
+        // 获取音乐详情后立即检查关注状态
+        checkFollowStatus()
+      })
+      .catch(error => {
+        console.error('Failed to get music detail:', error)
+        ElMessage.error('获取音乐详情失败')
+      })
 }
 
 const getComments = async () => {
   try {
     const response = await request.get(`/comments/music/${musicId.value}`)
-    
+
     // 为每个评论添加isLiked属性，并获取真实的点赞状态
     const commentsWithStatus = []
-    
+
     for (const comment of response) {
       // 为评论添加默认的isLiked和likeCount
       const commentWithStatus = {
@@ -225,7 +234,7 @@ const getComments = async () => {
         isLiked: comment.isLiked || false,
         likeCount: comment.likeCount || 0
       }
-      
+
       // 如果用户已登录，获取准确的点赞状态
       if (store.state.isAuthenticated) {
         try {
@@ -237,10 +246,10 @@ const getComments = async () => {
           // 使用默认值
         }
       }
-      
+
       commentsWithStatus.push(commentWithStatus)
     }
-    
+
     comments.value = commentsWithStatus
   } catch (error) {
     console.error('Failed to get comments:', error)
@@ -251,24 +260,24 @@ const getComments = async () => {
 const checkIsLiked = () => {
   if (store.state.isAuthenticated) {
     request.get(`/likes/music/${musicId.value}/status`)
-      .then(response => {
-        isLiked.value = response.liked
-      })
-      .catch(error => {
-        console.error('Failed to check like status:', error)
-      })
+        .then(response => {
+          isLiked.value = response.liked
+        })
+        .catch(error => {
+          console.error('Failed to check like status:', error)
+        })
   }
 }
 
 const checkFollowStatus = () => {
   if (store.state.isAuthenticated && music.musicianId) {
     request.get(`/follow/${music.musicianId}/status`)
-      .then(response => {
-        isFollowingMusician.value = response.isFollowing
-      })
-      .catch(error => {
-        console.error('Failed to check follow status:', error)
-      })
+        .then(response => {
+          isFollowingMusician.value = response.isFollowing
+        })
+        .catch(error => {
+          console.error('Failed to check follow status:', error)
+        })
   } else {
     // 如果用户未登录或没有音乐人ID，则重置关注状态
     isFollowingMusician.value = false
@@ -280,46 +289,46 @@ const handleFollowMusician = () => {
     ElMessage.warning('请先登录')
     return
   }
-  
+
   if (!music.musicianId) {
     ElMessage.warning('无法关注该音乐人')
     return
   }
-  
+
   const url = `/follow/${music.musicianId}`
   const method = isFollowingMusician.value ? 'delete' : 'post'
-  
+
   request[method](url)
-    .then(() => {
-      isFollowingMusician.value = !isFollowingMusician.value
-      ElMessage.success(isFollowingMusician.value ? '关注成功' : '已取消关注')
-    })
-    .catch(error => {
-      console.error('Failed to follow musician:', error)
-      ElMessage.error('操作失败')
-    })
+      .then(() => {
+        isFollowingMusician.value = !isFollowingMusician.value
+        ElMessage.success(isFollowingMusician.value ? '关注成功' : '已取消关注')
+      })
+      .catch(error => {
+        console.error('Failed to follow musician:', error)
+        ElMessage.error('操作失败')
+      })
 }
 
 const handlePlay = () => {
   store.dispatch('playMusic', music)
 }
 
-const { toggleLike: toggleMusicLike } = useLike()
+const {toggleLike: toggleMusicLike} = useLike()
 
 const handleLike = async () => {
   if (!store.state.isAuthenticated) {
     ElMessage.warning('请先登录')
     return
   }
-  
+
   try {
     const response = await toggleMusicLike('music', musicId.value)
-    
+
     // 根据后端返回的结果更新状态
     const wasLiked = isLiked.value
     isLiked.value = response.liked
     music.likeCount = response.likeCount || (wasLiked ? music.likeCount - 1 : music.likeCount + 1)
-    
+
     ElMessage.success(isLiked.value ? '喜欢成功' : '取消喜欢')
   } catch (error) {
     console.error('Failed to like music:', error)
@@ -329,24 +338,24 @@ const handleLike = async () => {
 
 const handleShare = () => {
   const shareUrl = `${window.location.origin}/music/${musicId.value}`
-  
+
   if (navigator.clipboard && navigator.clipboard.writeText) {
     // 使用现代Clipboard API
     navigator.clipboard.writeText(shareUrl)
-      .then(() => {
-        ElMessage.success('分享链接已复制到剪贴板')
-      })
-      .catch(error => {
-        console.error('Failed to copy share link:', error)
-        ElMessage.error('复制失败，请手动复制链接')
-      })
+        .then(() => {
+          ElMessage.success('分享链接已复制到剪贴板')
+        })
+        .catch(error => {
+          console.error('Failed to copy share link:', error)
+          ElMessage.error('复制失败，请手动复制链接')
+        })
   } else {
     // 降级方案：使用传统的文本域选择复制
     const textArea = document.createElement('textarea')
     textArea.value = shareUrl
     document.body.appendChild(textArea)
     textArea.select()
-    
+
     try {
       document.execCommand('copy')
       ElMessage.success('分享链接已复制到剪贴板')
@@ -360,39 +369,38 @@ const handleShare = () => {
 }
 
 
-
 const handleSubmitComment = () => {
   if (!store.state.isAuthenticated) {
     ElMessage.warning('请先登录')
     return
   }
-  
+
   if (!commentContent.value.trim()) {
     ElMessage.warning('请输入评论内容')
     return
   }
-  
-  request.post(`/comments/music/${musicId.value}`, { content: commentContent.value })
-    .then(response => {
-      comments.value.unshift(response)
-      music.commentCount++
-      commentContent.value = ''
-      ElMessage.success('评论成功')
-    })
-    .catch(error => {
-      console.error('Failed to submit comment:', error)
-      ElMessage.error('评论失败')
-    })
+
+  request.post(`/comments/music/${musicId.value}`, {content: commentContent.value})
+      .then(response => {
+        comments.value.unshift(response)
+        music.commentCount++
+        commentContent.value = ''
+        ElMessage.success('评论成功')
+      })
+      .catch(error => {
+        console.error('Failed to submit comment:', error)
+        ElMessage.error('评论失败')
+      })
 }
 
-const { toggleCommentLike: handleLikeComment } = useCommentLike()
+const {toggleCommentLike: handleLikeComment} = useCommentLike()
 
 const handleReply = (comment) => {
   if (!store.state.isAuthenticated) {
     ElMessage.warning('请先登录')
     return
   }
-  
+
   if (showReplyInput.value === comment.id) {
     // 如果当前已经打开了该评论的回复框，则关闭
     showReplyInput.value = null
@@ -411,21 +419,21 @@ const handleSubmitReply = () => {
     ElMessage.warning('请输入回复内容')
     return
   }
-  
-  request.post(`/comments/${replyToComment.value.id}/reply`, { content: replyContent.value })
-    .then(response => {
-      ElMessage.success('回复成功')
-      // 关闭回复框
-      showReplyInput.value = null
-      replyToComment.value = null
-      replyContent.value = ''
-      // 重新获取评论列表以显示新的回复
-      getComments()
-    })
-    .catch(error => {
-      console.error('Failed to submit reply:', error)
-      ElMessage.error('回复失败')
-    })
+
+  request.post(`/comments/${replyToComment.value.id}/reply`, {content: replyContent.value})
+      .then(response => {
+        ElMessage.success('回复成功')
+        // 关闭回复框
+        showReplyInput.value = null
+        replyToComment.value = null
+        replyContent.value = ''
+        // 重新获取评论列表以显示新的回复
+        getComments()
+      })
+      .catch(error => {
+        console.error('Failed to submit reply:', error)
+        ElMessage.error('回复失败')
+      })
 }
 
 const toggleExpandReplies = (commentId) => {
@@ -440,9 +448,9 @@ const getVisibleReplies = (comment) => {
   if (!comment.replies || comment.replies.length === 0) {
     return []
   }
-  
+
   const isExpanded = expandedReplies.value.has(comment.id)
-  
+
   if (isExpanded) {
     return comment.replies
   } else {
