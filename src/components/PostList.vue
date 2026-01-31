@@ -337,6 +337,10 @@ const loadComments = async (post) => {
     for (const comment of commentsData) {
       const commentWithStatus = {
         ...comment,
+        // 规范时间字段，模板中使用 `createdAt`
+        createdAt: comment.createTime || comment.createdAt,
+        // 保证 user 字段存在，模板中访问 user.xxx
+        user: comment.user || { id: null, username: '', nickname: '', avatar: null },
         isLiked: comment.isLiked || false,
         likeCount: comment.likeCount || 0
       }
