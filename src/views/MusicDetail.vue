@@ -305,7 +305,19 @@ const handleFollowMusician = () => {
       })
       .catch(error => {
         console.error('Failed to follow musician:', error)
-        ElMessage.error('操作失败')
+        
+        // 检查错误类型并给出相应提示
+        if (error.response) {
+          if (error.response.status === 403) {
+            ElMessage.error('不能关注自己！')
+          } else if (error.response.status === 401) {
+            ElMessage.error('请先登录')
+          } else {
+            ElMessage.error(error.response.data?.message || '关注音乐人失败，请稍后再试！')
+          }
+        } else {
+          ElMessage.error('网络错误，请稍后再试！')
+        }
       })
 }
 
